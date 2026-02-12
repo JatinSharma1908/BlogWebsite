@@ -1,0 +1,108 @@
+{% extends 'blog/auth_base.html' %}
+
+{% block title %}Register - BlogWebsite{% endblock %}
+
+{% block content %}
+<div class="auth-form-container">
+    <div class="auth-form-header">
+        <h2 class="auth-form-title">Create account</h2>
+        <p class="auth-form-subtitle">Join our community of writers and readers</p>
+    </div>
+
+    <form method="post" id="registerForm" class="auth-form">
+        {% csrf_token %}
+
+        <div class="auth-field">
+            <label for="id_name" class="form-label">
+                <i class="bi bi-person form-icon"></i>Full Name
+            </label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="text-danger">
+                    {% for error in form.name.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="auth-field">
+            <label for="id_email" class="form-label">
+                <i class="bi bi-envelope form-icon"></i>Email Address
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="text-danger">
+                    {% for error in form.email.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="auth-field">
+            <label for="id_role" class="form-label">
+                <i class="bi bi-person-badge form-icon"></i>Choose Your Role
+            </label>
+            {{ form.role }}
+            <div class="role-info">
+                <p><strong>Reader</strong> — Browse and comment on blog posts</p>
+                <p><strong>Author</strong> — Create, edit and publish your own blogs</p>
+            </div>
+            {% if form.role.errors %}
+                <div class="text-danger">
+                    {% for error in form.role.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="auth-field">
+            <label for="id_password1" class="form-label">
+                <i class="bi bi-lock form-icon"></i>Password
+            </label>
+            {{ form.password1 }}
+            <small class="form-text">Must be at least 8 characters long</small>
+            {% if form.password1.errors %}
+                <div class="text-danger">
+                    {% for error in form.password1.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="auth-field">
+            <label for="id_password2" class="form-label">
+                <i class="bi bi-lock-fill form-icon"></i>Confirm Password
+            </label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+                <div class="text-danger">
+                    {% for error in form.password2.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary auth-submit-btn">
+            <i class="bi bi-person-plus me-2"></i>Create Account
+        </button>
+    </form>
+
+    <div class="auth-form-footer">
+        <p>Already have an account? <a href="{% url 'login' %}" class="auth-link">Sign in here</a></p>
+        <a href="{% url 'home' %}" class="auth-back-link">
+            <i class="bi bi-arrow-left me-1"></i>Back to home
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,322 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Dashboard - Blog Website{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container">
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Welcome, {{ user.name }}!</h1>
+                <p class="dashboard-subtitle">
+                    {% if roles %}
+                        Your role{% if roles|length > 1 %}s{% endif %}: 
+                        {% for role in roles %}
+                            <span class="badge-role">{{ role }}</span>{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="badge-role">No role assigned</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% if is_author %}
+        <!-- Author Dashboard -->
+        <div class="row stats-row">
+            <!-- Total Blogs -->
+            <div class="col-md-3">
+                <div class="card stat-card stat-card-primary">
+                    <div class="card-body">
+                        <div class="stat-icon">
+                            <i class="bi bi-file-text"></i>
+                        </div>
+                        <h3 class="stat-number">{{ total_blogs }}</h3>
+                        <p class="stat-label">Total Blogs</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Published Blogs -->
+            <div class="col-md-3">
+                <div class="card stat-card stat-card-success">
+                    <div class="card-body">
+                        <div class="stat-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <h3 class="stat-number">{{ published_blogs }}</h3>
+                        <p class="stat-label">Published</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Draft Blogs -->
+            <div class="col-md-3">
+                <div class="card stat-card stat-card-warning">
+                    <div class="card-body">
+                        <div class="stat-icon">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <h3 class="stat-number">{{ draft_blogs }}</h3>
+                        <p class="stat-label">Drafts</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Comments -->
+            <div class="col-md-3">
+                <div class="card stat-card stat-card-info">
+                    <div class="card-body">
+                        <div class="stat-icon">
+                            <i class="bi bi-chat-dots"></i>
+                        </div>
+                        <h3 class="stat-number">{{ total_comments }}</h3>
+                        <p class="stat-label">Comments</p>
+                        {% if pending_comments > 0 %}
+                            <span class="badge-pending">{{ pending_comments }} pending</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row quick-actions-row">
+            <div class="col-md-12">
+                <div class="card quick-actions-card">
+                    <div class="card-header">
+                        <h5 class="card-header-title">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="action-buttons">
+                            <a href="{% url 'create_blog' %}" class="btn btn-primary action-btn">
+                                <i class="bi bi-plus-circle"></i> Create New Blog
+                            </a>
+                            <a href="{% url 'my_blogs' %}" class="btn btn-outline-primary action-btn">
+                                <i class="bi bi-list-ul"></i> My Blogs
+                            </a>
+                            <a href="{% url 'manage_categories' %}" class="btn btn-outline-primary action-btn">
+                                <i class="bi bi-folder"></i> Categories
+                            </a>
+                            <a href="#" class="btn btn-outline-primary action-btn">
+                                <i class="bi bi-tags"></i> Tags
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Blogs -->
+        <div class="row recent-content-row">
+            <div class="col-md-12">
+                <div class="card recent-card">
+                    <div class="card-header">
+                        <h5 class="card-header-title">Recent Blogs</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_blogs %}
+                            <div class="table-responsive">
+                                <table class="table blog-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Status</th>
+                                            <th>Category</th>
+                                            <th>Published</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for blog in recent_blogs %}
+                                            <tr>
+                                                <td class="blog-title-col">{{ blog.title }}</td>
+                                                <td>
+                                                    {% if blog.status == 'published' %}
+                                                        <span class="badge-status badge-published">Published</span>
+                                                    {% elif blog.status == 'draft' %}
+                                                        <span class="badge-status badge-draft">Draft</span>
+                                                    {% else %}
+                                                        <span class="badge-status badge-archived">Archived</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ blog.category.name|default:"Uncategorized" }}</td>
+                                                <td>{{ blog.published_at|date:"M d, Y"|default:"Not published" }}</td>
+                                                <td>
+                                                    <a href="{% url 'edit_blog' blog.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-inbox"></i>
+                                <p>No blogs yet. Create your first blog to get started!</p>
+                                <a href="{% url 'create_blog' %}" class="btn btn-primary">Create Blog</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Reader Dashboard -->
+
+        <!-- Category Slider Section -->
+        <div class="row reader-categories-row">
+            <div class="col-md-12">
+                <div class="card reader-categories-card">
+                    <div class="card-header reader-section-header">
+                        <div class="reader-section-title-wrap">
+                            <h5 class="card-header-title">
+                                <i class="bi bi-grid-fill me-2"></i>Browse by Category
+                            </h5>
+                            <p class="reader-section-subtitle">Pick a category and start reading</p>
+                        </div>
+                    </div>
+                    <div class="card-body reader-categories-body">
+                        {% if categories %}
+                            <div class="categories-slider-wrapper">
+                                <button class="slider-btn slider-btn-prev" id="sliderPrev">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <div class="categories-slider" id="categoriesSlider">
+                                    {% for category in categories %}
+                                        <div class="category-slide-card">
+                                            <a href="#" class="category-slide-link">
+                                                <div class="category-slide-icon">
+                                                    <i class="bi bi-folder2-open"></i>
+                                                </div>
+                                                <h6 class="category-slide-name">{{ category.name }}</h6>
+                                                <span class="category-slide-count">
+                                                    {{ category.blogs.count }} post{{ category.blogs.count|pluralize }}
+                                                </span>
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <button class="slider-btn slider-btn-next" id="sliderNext">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-folder-x"></i>
+                                <p>No categories available yet. Check back soon!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Comments + Quick Links -->
+        <div class="row reader-dashboard">
+            <div class="col-md-8">
+                <div class="card reader-card">
+                    <div class="card-header">
+                        <h5 class="card-header-title">
+                            <i class="bi bi-chat-dots me-2"></i>Your Recent Comments
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_comments %}
+                            <div class="comments-list">
+                                {% for comment in recent_comments %}
+                                    <div class="comment-item">
+                                        <div class="comment-header">
+                                            <span class="comment-blog">On: {{ comment.blog.title }}</span>
+                                            <span class="comment-date">{{ comment.created_at|date:"M d, Y" }}</span>
+                                        </div>
+                                        <p class="comment-text">{{ comment.comment|truncatewords:20 }}</p>
+                                        <span class="badge-status
+                                            {% if comment.status == 'approved' %}badge-published
+                                            {% elif comment.status == 'pending' %}badge-draft
+                                            {% else %}badge-archived{% endif %}">
+                                            {{ comment.status|title }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-chat-left-text"></i>
+                                <p>You haven't made any comments yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h5 class="card-header-title">
+                            <i class="bi bi-lightning-charge me-2"></i>Quick Links
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-links-list">
+                            <a href="#" class="quick-link-item">
+                                <i class="bi bi-book"></i>
+                                <span>Browse All Blogs</span>
+                            </a>
+                            <a href="#" class="quick-link-item">
+                                <i class="bi bi-folder"></i>
+                                <span>Browse Categories</span>
+                            </a>
+                            <a href="#" class="quick-link-item">
+                                <i class="bi bi-tags"></i>
+                                <span>Browse Tags</span>
+                            </a>
+                            <a href="#" class="quick-link-item">
+                                <i class="bi bi-person"></i>
+                                <span>My Profile</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card info-card upgrade-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-star upgrade-icon"></i>
+                        <h5>Become an Author</h5>
+                        <p>Want to share your own stories? Contact admin to upgrade your account.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+    const slider = document.getElementById('categoriesSlider');
+    const prevBtn = document.getElementById('sliderPrev');
+    const nextBtn = document.getElementById('sliderNext');
+
+    if (slider && prevBtn && nextBtn) {
+        const scrollAmount = 300;
+
+        nextBtn.addEventListener('click', () => {
+            slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        });
+
+        prevBtn.addEventListener('click', () => {
+            slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        });
+
+        // Hide/show buttons based on scroll position
+        slider.addEventListener('scroll', () => {
+            prevBtn.style.opacity = slider.scrollLeft > 0 ? '1' : '0.4';
+            nextBtn.style.opacity = slider.scrollLeft < slider.scrollWidth - slider.clientWidth ? '1' : '0.4';
+        });
+    }
+</script>
+{% endblock %}
+{% endblock %}

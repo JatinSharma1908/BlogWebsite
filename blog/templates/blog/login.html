@@ -1,0 +1,61 @@
+{% extends 'blog/auth_base.html' %}
+
+{% block title %}Login - BlogWebsite{% endblock %}
+
+{% block content %}
+<div class="auth-form-container">
+    <div class="auth-form-header">
+        <h2 class="auth-form-title">Welcome back</h2>
+        <p class="auth-form-subtitle">Sign in to continue your journey</p>
+    </div>
+
+    <form method="post" id="loginForm" class="auth-form">
+        {% csrf_token %}
+
+        <div class="auth-field">
+            <label for="id_username" class="form-label">
+                <i class="bi bi-envelope form-icon"></i>Email Address
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="text-danger">
+                    {% for error in form.username.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="auth-field">
+            <label for="id_password" class="form-label">
+                <i class="bi bi-lock form-icon"></i>Password
+            </label>
+            {{ form.password }}
+            {% if form.password.errors %}
+                <div class="text-danger">
+                    {% for error in form.password.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary auth-submit-btn">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+        </button>
+    </form>
+
+    <div class="auth-form-footer">
+        <p>Don't have an account? <a href="{% url 'register' %}" class="auth-link">Create one here</a></p>
+        <a href="{% url 'home' %}" class="auth-back-link">
+            <i class="bi bi-arrow-left me-1"></i>Back to home
+        </a>
+    </div>
+</div>
+{% endblock %}

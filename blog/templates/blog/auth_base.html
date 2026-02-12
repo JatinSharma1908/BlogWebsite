@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BlogWebsite{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <!-- Critical Auth Layout Override -->
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        body.auth-body {
+            display: block !important;
+            flex-direction: unset !important;
+            background: #F8F7FF;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        .auth-layout {
+            display: flex !important;
+            flex-direction: row !important;
+            min-height: 100vh;
+            width: 100%;
+        }
+        .auth-left-panel {
+            width: 45%;
+            min-height: 100vh;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #4C1D95 0%, #6B46C1 60%, #8B5CF6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .auth-right-panel {
+            width: 55%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            background: #ffffff;
+            overflow-y: auto;
+        }
+        @media (max-width: 768px) {
+            .auth-layout {
+                flex-direction: column !important;
+            }
+            .auth-left-panel,
+            .auth-right-panel {
+                width: 100% !important;
+                min-height: auto;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="auth-body">
+
+    <!-- Floating Messages -->
+    {% if messages %}
+        <div class="auth-messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Auth Split Layout -->
+    <div class="auth-layout">
+
+        <!-- Left: Branding Panel -->
+        <div class="auth-left-panel">
+            <div class="auth-left-content">
+                <a href="{% url 'home' %}" class="auth-brand">
+                    <i class="bi bi-gem auth-brand-icon"></i>
+                    <span class="auth-brand-name">BlogWebsite</span>
+                </a>
+                <h2 class="auth-left-title">Your premium blogging platform</h2>
+                <p class="auth-left-subtitle">Where great stories come to life. Join thousands of writers and readers sharing ideas that matter.</p>
+
+                <div class="auth-features-list">
+                    <div class="auth-feature-item">
+                        <i class="bi bi-pen-fill auth-feature-icon"></i>
+                        <span>Write and publish beautiful blogs</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <i class="bi bi-people-fill auth-feature-icon"></i>
+                        <span>Engage with a growing community</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <i class="bi bi-folder2-open auth-feature-icon"></i>
+                        <span>Organize content by categories</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <i class="bi bi-shield-check auth-feature-icon"></i>
+                        <span>Secure and private platform</span>
+                    </div>
+                </div>
+
+                <!-- Decorative orbs -->
+                <div class="auth-left-orbs">
+                    <div class="auth-orb auth-orb-1"></div>
+                    <div class="auth-orb auth-orb-2"></div>
+                    <div class="auth-orb auth-orb-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Form Panel -->
+        <div class="auth-right-panel">
+            <div class="auth-form-wrapper">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,111 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}My Blogs - BlogWebsite{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <!-- Header -->
+    <div class="row blog-list-header">
+        <div class="col-md-8">
+            <h1 class="page-title">
+                <i class="bi bi-file-text-fill me-3"></i>My Blogs
+            </h1>
+            <p class="page-subtitle">Manage all your blog posts</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'create_blog' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Create New Blog
+            </a>
+        </div>
+    </div>
+
+    <!-- Blogs List -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card blog-list-card">
+                <div class="card-body blog-list-body">
+                    {% if blogs %}
+                        <div class="table-responsive">
+                            <table class="table blog-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="blog-title-col">Title</th>
+                                        <th>Status</th>
+                                        <th>Category</th>
+                                        <th>Published</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for blog in blogs %}
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <strong class="text-dark-purple">{{ blog.title }}</strong>
+                                                    {% if blog.excerpt %}
+                                                        <br>
+                                                        <small class="blog-excerpt">{{ blog.excerpt|truncatewords:15 }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if blog.status == 'published' %}
+                                                    <span class="badge-status badge-published">
+                                                        <i class="bi bi-check-circle me-1"></i>Published
+                                                    </span>
+                                                {% elif blog.status == 'draft' %}
+                                                    <span class="badge-status badge-draft">
+                                                        <i class="bi bi-pencil me-1"></i>Draft
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge-status badge-archived">
+                                                        <i class="bi bi-archive me-1"></i>Archived
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if blog.category %}
+                                                    <span class="category-badge">
+                                                        <i class="bi bi-folder me-1"></i>{{ blog.category.name }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="uncategorized-text">Uncategorized</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if blog.published_at %}
+                                                    <span class="publish-date">{{ blog.published_at|date:"M d, Y" }}</span>
+                                                {% else %}
+                                                    <span class="not-published-text">Not published</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'edit_blog' blog.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </a>
+                                                    <a href="{% url 'delete_blog' blog.id %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <p>No blogs yet. Start creating amazing content!</p>
+                            <a href="{% url 'create_blog' %}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-plus-circle me-2"></i>Create Your First Blog
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,452 @@
+===========================================
+BLOGWEBSITE - PROJECT CONTEXT
+===========================================
+
+PROJECT OVERVIEW:
+-----------------
+BlogWebsite is a premium Django-based blogging platform with a royal purple theme.
+It features role-based access control (Authors & Readers), blog management, 
+categories, tags, and a sophisticated user interface.
+
+TECH STACK:
+-----------
+- Backend: Django 5.x (Python)
+- Database: SQLite (development) - supports multi-tenancy
+- Frontend: Bootstrap 5.3, Custom CSS (Royal Purple Theme)
+- Icons: Bootstrap Icons
+- Fonts: Google Fonts (Inter)
+
+===========================================
+PROJECT STRUCTURE
+===========================================
+
+blogWebsite/
+├── config/                     # Django project settings
+│   ├── settings.py            # Main configuration
+│   ├── urls.py               # Root URL configuration
+│   └── wsgi.py               # WSGI configuration
+│
+├── blog/                      # Main application
+│   ├── models.py             # Database models
+│   ├── views.py              # View functions
+│   ├── forms.py              # Form definitions
+│   ├── urls.py               # App URL routes
+│   ├── admin.py              # Admin panel configuration
+│   │
+│   ├── templates/blog/       # HTML templates
+│   │   ├── base.html        # Base template
+│   │   ├── home.html        # Landing page
+│   │   ├── register.html    # User registration
+│   │   ├── login.html       # User login
+│   │   ├── dashboard.html   # User dashboard
+│   │   ├── create_blog.html # Blog creation form
+│   │   ├── edit_blog.html   # Blog editing form
+│   │   ├── my_blogs.html    # Blog list management
+│   │   ├── delete_blog.html # Delete confirmation
+│   │   └── manage_categories.html  # Category management
+│   │
+│   └── static/css/          # Static assets
+│       └── style.css        # Premium royal theme CSS
+│
+├── db.sqlite3               # SQLite database
+├── manage.py                # Django management script
+└── requirements.txt         # Python dependencies
+
+===========================================
+DATABASE SCHEMA
+===========================================
+
+USERS TABLE (Custom User Model):
+- id: Serial Primary Key
+- name: VARCHAR(100)
+- email: VARCHAR(150) UNIQUE (used as username)
+- password: Hashed password
+- is_active: BOOLEAN
+- is_staff: BOOLEAN
+- is_superuser: BOOLEAN
+- created_at: TIMESTAMP
+
+ROLES TABLE:
+- id: Serial Primary Key
+- name: VARCHAR(50) UNIQUE
+  Available roles: 'Author', 'Reader'
+
+PERMISSIONS TABLE:
+- id: Serial Primary Key
+- name: VARCHAR(100) UNIQUE
+
+USER_ROLES TABLE (Many-to-Many):
+- user_id: FK to users
+- role_id: FK to roles
+
+ROLE_PERMISSIONS TABLE (Many-to-Many):
+- role_id: FK to roles
+- permission_id: FK to permissions
+
+CATEGORIES TABLE:
+- id: Serial Primary Key
+- tenant_id: INT (multi-tenancy support)
+- name: VARCHAR(100)
+- slug: VARCHAR(120) (auto-generated)
+UNIQUE INDEX on (tenant_id, slug)
+
+TAGS TABLE:
+- id: Serial Primary Key
+- tenant_id: INT
+- name: VARCHAR(100)
+- slug: VARCHAR(120)
+UNIQUE INDEX on (tenant_id, slug)
+
+BLOGS TABLE:
+- id: Serial Primary Key
+- tenant_id: INT
+- title: VARCHAR(255)
+- slug: VARCHAR(300) (auto-generated)
+- excerpt: TEXT (optional)
+- content: TEXT
+- featured_image: TEXT (URL)
+- status: VARCHAR(20) ('draft', 'published', 'archived')
+- author_id: FK to users
+- category_id: FK to categories
+- published_at: TIMESTAMP
+- created_at: TIMESTAMP
+- updated_at: TIMESTAMP
+INDEXES on (tenant_id, slug), (tenant_id, status)
+
+COMMENTS TABLE:
+- id: Serial Primary Key
+- tenant_id: INT
+- blog_id: FK to blogs
+- name: VARCHAR(100)
+- email: VARCHAR(150)
+- comment: TEXT
+- status: VARCHAR(20) ('pending', 'approved', 'spam', 'rejected')
+- created_at: TIMESTAMP
+
+===========================================
+USER ROLES & PERMISSIONS
+===========================================
+
+READER ROLE:
+- Browse published blogs
+- Read blog content
+- Post comments (pending approval)
+- View own comment history
+
+AUTHOR ROLE:
+- All Reader permissions
+- Create new blog posts
+- Edit own blog posts
+- Delete own blog posts
+- Manage categories
+- Manage tags
+- Set blog status (draft/published/archived)
+- Moderate comments on own blogs
+
+ADMIN ROLE (Superuser):
+- All permissions
+- Access Django admin panel
+- Manage users and roles
+- Moderate all content
+
+===========================================
+URL ROUTES
+===========================================
+
+PUBLIC ROUTES:
+- /                           Home page
+- /register/                  User registration
+- /login/                     User login
+
+PROTECTED ROUTES (Login Required):
+- /logout/                    User logout
+- /dashboard/                 User dashboard (role-specific)
+
+AUTHOR ROUTES:
+- /blog/create/               Create new blog
+- /blog/<id>/edit/            Edit blog post
+- /blog/<id>/delete/          Delete blog post
+- /my-blogs/                  List user's blogs
+- /categories/                Manage categories
+
+===========================================
+KEY FEATURES
+===========================================
+
+1. AUTHENTICATION & AUTHORIZATION:
+   - Custom User model with email as username
+   - Role-based access control
+   - Registration with role selection
+   - Login/logout functionality
+   - Protected routes with @login_required
+
+2. DASHBOARD:
+   - Author Dashboard:
+     * Statistics (total blogs, published, drafts, comments)
+     * Quick action buttons
+     * Recent blogs table
+   - Reader Dashboard:
+     * Recent comments
+     * Quick links
+     * Upgrade to author option
+
+3. BLOG MANAGEMENT:
+   - Create blog with rich text content
+   - Category selection
+   - Tag management (comma-separated)
+   - Featured image URL
+   - Status management (draft/published/archived)
+   - Auto-slug generation from title
+   - Edit existing blogs
+   - Delete with confirmation
+
+4. CATEGORY MANAGEMENT:
+   - Create new categories
+   - Auto-slug generation
+   - View category blog count
+   - List all categories
+
+5. DESIGN FEATURES:
+   - Premium royal purple theme
+   - Smooth animations (fadeInUp, pulse, shimmer)
+   - Responsive design
+   - Glass-morphism effects
+   - Gradient buttons and cards
+   - Bootstrap Icons throughout
+   - Google Fonts (Inter)
+
+===========================================
+DESIGN SYSTEM
+===========================================
+
+COLOR PALETTE:
+- Primary: #6B46C1 (Royal Purple)
+- Secondary: #D4AF37 (Gold)
+- Accent: #4C1D95 (Deep Purple)
+- Background: #F8F7FF (Light Lavender)
+- Background Gradient: #EDE9FE
+- Text: #1F1B2E (Dark Purple)
+- Muted Text: #94A3B8
+- Success: #059669 / #10B981
+- Warning: #D97706 / #F59E0B
+- Danger: #DC2626 / #EF4444
+- Info: #0891B2 / #06B6D4
+
+TYPOGRAPHY:
+- Font Family: 'Inter', 'Segoe UI'
+- Headings: 700-900 weight
+- Body: 400-600 weight
+- Line Height: 1.6
+
+COMPONENTS:
+- Buttons: Gradient backgrounds, hover lift effect
+- Cards: Glass-morphism, subtle shadows
+- Forms: Purple borders, smooth focus transitions
+- Tables: Hover row effects, status badges
+- Badges: Gradient backgrounds, rounded
+- Alerts: Left border accent, gradient backgrounds
+
+ANIMATIONS:
+- fadeInUp: 0.8s ease-out
+- fadeIn: 0.6s ease-out
+- pulse: 4s infinite
+- All transitions: 0.3s ease
+
+===========================================
+IMPORTANT SETTINGS
+===========================================
+
+settings.py:
+------------
+AUTH_USER_MODEL = 'blog.User'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_URL = 'login'
+LOGOUT_REDIRECT_URL = 'login'
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'blog/static']
+
+TEMPLATES = [{
+    'DIRS': [BASE_DIR / 'blog/templates'],
+    ...
+}]
+
+===========================================
+WORKFLOW EXAMPLES
+===========================================
+
+NEW USER REGISTRATION:
+1. Visit / (home page)
+2. Click "Get Started" or "Register"
+3. Fill registration form (name, email, role, password)
+4. Role automatically assigned (Author or Reader)
+5. Redirect to login
+6. Login → Redirect to dashboard
+
+BLOG CREATION (Author):
+1. Login as Author
+2. Dashboard → "Create New Blog" button
+3. Fill form:
+   - Title (required)
+   - Excerpt (optional)
+   - Content (required)
+   - Category (select or create new)
+   - Tags (comma-separated)
+   - Featured image URL (optional)
+   - Status (draft/published)
+4. Submit → Redirect to "My Blogs"
+5. View, edit, or delete from list
+
+CATEGORY MANAGEMENT:
+1. Dashboard → "Categories" or direct link
+2. Left panel: Create new category form
+3. Right panel: List of existing categories
+4. Shows blog count per category
+5. Auto-generates slug from name
+
+===========================================
+FILE UPLOAD NOTES
+===========================================
+
+Currently, featured images are handled via URL input.
+To enable file uploads:
+1. Install Pillow: pip install Pillow
+2. Update models.py:
+   featured_image = models.ImageField(upload_to='blog_images/')
+3. Configure MEDIA settings in settings.py:
+   MEDIA_URL = '/media/'
+   MEDIA_ROOT = BASE_DIR / 'media'
+4. Update urls.py to serve media files in development
+5. Update forms.py widget to FileInput
+
+===========================================
+DEPLOYMENT CHECKLIST
+===========================================
+
+1. Security:
+   - Set DEBUG = False
+   - Configure ALLOWED_HOSTS
+   - Use environment variables for SECRET_KEY
+   - Set up HTTPS
+   - Configure CSRF_TRUSTED_ORIGINS
+
+2. Database:
+   - Migrate to PostgreSQL for production
+   - Set up database backups
+   - Configure connection pooling
+
+3. Static Files:
+   - Run python manage.py collectstatic
+   - Configure WhiteNoise or CDN
+   - Minify CSS/JS
+
+4. Performance:
+   - Enable caching (Redis/Memcached)
+   - Set up database indexes
+   - Configure gunicorn/uwsgi
+   - Enable gzip compression
+
+5. Monitoring:
+   - Set up error logging (Sentry)
+   - Configure application monitoring
+   - Set up health checks
+
+===========================================
+FUTURE ENHANCEMENTS
+===========================================
+
+PLANNED FEATURES:
+- Public blog listing page
+- Blog detail page with comments
+- Comment moderation system
+- Tag browsing
+- Search functionality
+- User profile pages
+- Social sharing
+- Email notifications
+- Blog analytics
+- Rich text editor (TinyMCE/CKEditor)
+- Image upload functionality
+- Blog drafts auto-save
+- SEO optimization
+- RSS feed
+- API endpoints (Django REST Framework)
+
+===========================================
+COMMON COMMANDS
+===========================================
+
+Development:
+python manage.py runserver
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py shell
+
+Database:
+python manage.py dbshell
+sqlite3 db.sqlite3
+
+Static Files:
+python manage.py collectstatic
+
+Testing:
+python manage.py test
+
+===========================================
+TROUBLESHOOTING
+===========================================
+
+ISSUE: Categories not showing in dropdown
+FIX: Create categories first via /categories/
+
+ISSUE: User can't create blogs
+FIX: Ensure user has 'Author' role assigned
+
+ISSUE: Static files not loading
+FIX: Check STATIC_URL and STATICFILES_DIRS in settings.py
+     Run python manage.py collectstatic
+
+ISSUE: Database locked error
+FIX: Close all connections to SQLite database
+     Restart development server
+
+ISSUE: Form validation errors
+FIX: Check browser console for JavaScript errors
+     Verify form field requirements
+
+===========================================
+CONTACT & SUPPORT
+===========================================
+
+For issues, feature requests, or contributions:
+- Check documentation in this file
+- Review Django documentation: docs.djangoproject.com
+- Bootstrap documentation: getbootstrap.com
+
+===========================================
+VERSION HISTORY
+===========================================
+
+v1.0.0 (Current):
+- User authentication with roles
+- Blog CRUD operations
+- Category management
+- Premium royal theme design
+- Responsive dashboard
+- Role-based dashboards
+
+===========================================
+LICENSE & CREDITS
+===========================================
+
+Django Framework: BSD License
+Bootstrap: MIT License
+Bootstrap Icons: MIT License
+Google Fonts (Inter): OFL License
+
+Custom Code: Your license here
+
+===========================================
+END OF CONTEXT DOCUMENT
+===========================================

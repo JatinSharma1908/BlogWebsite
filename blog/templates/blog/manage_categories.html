@@ -1,0 +1,108 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Manage Categories - BlogWebsite{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <div class="row">
+        <!-- Create Category Form -->
+        <div class="col-md-4 mb-4">
+            <div class="card category-form-card">
+                <div class="card-header category-form-header">
+                    <h5 class="category-form-title">
+                        <i class="bi bi-plus-circle me-2"></i>Add New Category
+                    </h5>
+                </div>
+                <div class="card-body category-form-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-section">
+                            <label for="id_category_name" class="form-label">
+                                <i class="bi bi-folder form-icon"></i>Category Name
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.name.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-check-circle me-2"></i>Create Category
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="col-md-8">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="bi bi-folder-fill me-3"></i>Categories
+                </h1>
+                <p class="page-subtitle">Organize your content with categories</p>
+            </div>
+
+            <div class="card category-list-card">
+                <div class="card-body blog-list-body">
+                    {% if categories %}
+                        <div class="list-group list-group-flush">
+                            {% for category in categories %}
+                                <div class="list-group-item category-list-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="category-name">
+                                                <i class="bi bi-folder me-2"></i>{{ category.name }}
+                                            </h6>
+                                            <small class="category-slug">
+                                                <i class="bi bi-link-45deg me-1"></i>Slug: {{ category.slug }}
+                                            </small>
+                                        </div>
+                                        <div>
+                                            <span class="badge-status category-count-badge">
+                                                <i class="bi bi-file-text me-1"></i>
+                                                {{ category.blogs.count }} blog{{ category.blogs.count|pluralize }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-folder-x"></i>
+                            <p>No categories yet. Create your first category!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card category-info-card">
+                <div class="card-body category-info-body">
+                    <h6 class="category-info-title">
+                        <i class="bi bi-info-circle me-2"></i>About Categories
+                    </h6>
+                    <p class="category-info-text">
+                        Categories help organize your blog posts into different topics or themes. Each blog post can belong to one category, making it easier for readers to find content they're interested in.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
