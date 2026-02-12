@@ -1,6 +1,6 @@
 {% extends 'blog/auth_base.html' %}
 
-{% block title %}Login - BlogWebsite{% endblock %}
+{% block title %}Sign In - BlogWebsite{% endblock %}
 
 {% block content %}
 <div class="auth-form-container">
@@ -18,7 +18,7 @@
             </label>
             {{ form.username }}
             {% if form.username.errors %}
-                <div class="text-danger">
+                <div class="text-danger mt-1">
                     {% for error in form.username.errors %}
                         <small>{{ error }}</small>
                     {% endfor %}
@@ -32,7 +32,7 @@
             </label>
             {{ form.password }}
             {% if form.password.errors %}
-                <div class="text-danger">
+                <div class="text-danger mt-1">
                     {% for error in form.password.errors %}
                         <small>{{ error }}</small>
                     {% endfor %}

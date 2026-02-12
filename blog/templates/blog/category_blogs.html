@@ -1,0 +1,147 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ category.name }} - BlogWebsite{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <!-- Category Header -->
+    <div class="page-header text-center">
+        <h1 class="page-title">
+            <i class="bi bi-folder"></i> {{ category.name }}
+        </h1>
+        <p class="page-subtitle">Explore posts in this category</p>
+    </div>
+
+    <div class="row">
+        <!-- Main Content - Blog List -->
+        <div class="col-lg-8">
+            {% if blogs %}
+                {% for blog in blogs %}
+                    <article class="card blog-card mb-4">
+                        {% if blog.featured_image %}
+                            <img src="{{ blog.featured_image }}" class="card-img-top blog-featured-image" alt="{{ blog.title }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="blog-meta mb-2">
+                                <span class="text-muted">
+                                    <i class="bi bi-calendar3"></i> {{ blog.published_at|date:"F d, Y" }}
+                                </span>
+                                <span class="text-muted ms-2">
+                                    <i class="bi bi-person"></i> {{ blog.author.name }}
+                                </span>
+                            </div>
+                            
+                            <h2 class="blog-title">
+                                <a href="{% url 'blog_detail' blog.slug %}" class="text-dark-purple text-decoration-none">
+                                    {{ blog.title }}
+                                </a>
+                            </h2>
+                            
+                            <p class="blog-excerpt">{{ blog.excerpt }}</p>
+                            
+                            <a href="{% url 'blog_detail' blog.slug %}" class="btn btn-outline-primary">
+                                Read More <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </article>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p>No published blogs in this category yet.</p>
+                    <a href="{% url 'blog_list' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left me-2"></i>View All Blogs
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar - Categories -->
+        <div class="col-lg-4">
+            <div class="card category-sidebar">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-folder2-open me-2"></i>All Categories
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'blog_list' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-collection me-2"></i>All Posts
+                        </a>
+                        {% for cat in categories %}
+                            <a href="{% url 'category_blogs' cat.slug %}" 
+                               class="list-group-item list-group-item-action {% if cat.id == category.id %}active{% endif %}">
+                                <i class="bi bi-folder me-2"></i>{{ cat.name }}
+                            </a>
+                        {% empty %}
+                            <p class="text-muted">No categories yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.blog-card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(107, 70, 193, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(107, 70, 193, 0.2);
+}
+
+.blog-featured-image {
+    height: 300px;
+    object-fit: cover;
+}
+
+.blog-meta {
+    font-size: 0.9rem;
+}
+
+.blog-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+}
+
+.blog-title a:hover {
+    color: #6B46C1 !important;
+}
+
+.blog-excerpt {
+    color: #64748b;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+.category-sidebar {
+    position: sticky;
+    top: 20px;
+}
+
+.category-sidebar .list-group-item {
+    border: none;
+    padding: 0.75rem 1rem;
+    color: #1F1B2E;
+}
+
+.category-sidebar .list-group-item:hover {
+    background: linear-gradient(135deg, #f8f7ff 0%, #ede9fe 100%);
+    color: #6B46C1;
+}
+
+.category-sidebar .list-group-item.active {
+    background: linear-gradient(135deg, #6B46C1 0%, #4C1D95 100%);
+    color: white;
+    font-weight: 600;
+}
+</style>
+{% endblock %}

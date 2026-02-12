@@ -3,102 +3,100 @@
 {% block title %}Home - BlogWebsite - Premium Blogging Platform{% endblock %}
 
 {% block content %}
-<div class="container hero-section">
-    <div class="row">
-        <div class="col-md-12 text-center">
-            <h1 class="display-4">
+<div class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
                 <i class="bi bi-gem home-hero-icon"></i>
-                Welcome to BlogWebsite
-            </h1>
-            <p class="lead">Where Premium Stories Meet Passionate Readers</p>
-            
-            {% if user.is_authenticated %}
-                <div class="alert welcome-alert">
-                    <h4>
-                        <i class="bi bi-person-check-fill me-2"></i>
-                        Welcome back, {{ user.name }}!
-                    </h4>
-                    <p>Your creative journey continues here. Ready to inspire the world?</p>
-                    <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg mt-3">
-                        <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
-                    </a>
-                </div>
-            {% else %}
-                <div class="mt-4">
-                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-2">
-                        <i class="bi bi-rocket-takeoff me-2"></i>Get Started
-                    </a>
-                    <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                    </a>
-                </div>
-            {% endif %}
+                <h1>Welcome to BlogWebsite</h1>
+                <p class="lead">Where premium stories meet passionate readers. Share your voice with the world through elegant, thoughtfully crafted content.</p>
+                
+                {% if user.is_authenticated %}
+                    <div class="welcome-alert">
+                        <h4>
+                            <i class="bi bi-person-check-fill me-2"></i>
+                            Welcome back, {{ user.name }}
+                        </h4>
+                        <p>Your creative journey continues here. Ready to inspire the world?</p>
+                        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg mt-3">
+                            <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="mt-4">
+                        <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-3">
+                            <i class="bi bi-rocket-takeoff me-2"></i>Get Started
+                        </a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Featured Section -->
-    <div class="row mt-5">
+<!-- Features Section -->
+<div class="container" style="margin-top: 5rem; margin-bottom: 5rem;">
+    <div class="row">
         <div class="col-md-4 mb-4">
             <div class="card feature-card">
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        <i class="bi bi-pen-fill feature-icon"></i>
-                    </div>
-                    <h5 class="card-title text-center">Create Premium Blogs</h5>
-                    <p class="card-text">Share your thoughts and ideas with an elegant, distraction-free writing experience designed for authors who value quality.</p>
+                <div class="card-body text-center">
+                    <i class="bi bi-pen-fill feature-icon mb-3"></i>
+                    <h5 class="card-title">Craft Premium Content</h5>
+                    <p class="card-text">Share your thoughts and ideas with an elegant, distraction-free writing experience designed for authors who value quality and clarity.</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-4">
             <div class="card feature-card">
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        <i class="bi bi-people-fill feature-icon-gold"></i>
-                    </div>
-                    <h5 class="card-title text-center">Engage Your Community</h5>
-                    <p class="card-text">Build meaningful connections with readers through thoughtful discussions and engaging comment sections that foster real conversations.</p>
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill feature-icon-gold mb-3"></i>
+                    <h5 class="card-title">Engage Your Community</h5>
+                    <p class="card-text">Build meaningful connections with readers through thoughtful discussions and engaging interactions that foster real conversations.</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-4">
             <div class="card feature-card">
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        <i class="bi bi-archive-fill feature-icon-purple"></i>
-                    </div>
-                    <h5 class="card-title text-center">Organize With Elegance</h5>
+                <div class="card-body text-center">
+                    <i class="bi bi-archive-fill feature-icon-purple mb-3"></i>
+                    <h5 class="card-title">Organize With Elegance</h5>
                     <p class="card-text">Use sophisticated categories and tags to structure your content library, making it easy for readers to discover your best work.</p>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Features Highlight -->
-    <div class="row mt-5 mb-5">
+<!-- Why Choose Section -->
+<div class="container" style="margin-bottom: 5rem;">
+    <div class="row">
         <div class="col-md-12">
             <div class="card why-choose-card">
-                <div class="card-body why-choose-body text-center">
-                    <h3 class="why-choose-title">
+                <div class="card-body why-choose-body">
+                    <h3 class="why-choose-title text-center">
                         <i class="bi bi-stars me-2"></i>
                         Why Choose BlogWebsite?
                     </h3>
                     <div class="row">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-4 text-center">
                             <i class="bi bi-shield-check why-icon why-icon-purple"></i>
                             <h6 class="why-item-title">Secure & Private</h6>
                             <p class="why-item-text">Your data is protected with enterprise-grade security</p>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-4 text-center">
                             <i class="bi bi-lightning-charge why-icon why-icon-gold"></i>
                             <h6 class="why-item-title">Lightning Fast</h6>
                             <p class="why-item-text">Optimized performance for the best user experience</p>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-4 text-center">
                             <i class="bi bi-palette why-icon why-icon-violet"></i>
                             <h6 class="why-item-title">Beautiful Design</h6>
                             <p class="why-item-text">Elegant interface that puts your content first</p>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-4 text-center">
                             <i class="bi bi-headset why-icon why-icon-green"></i>
                             <h6 class="why-item-title">24/7 Support</h6>
                             <p class="why-item-text">We're here to help you succeed at every step</p>

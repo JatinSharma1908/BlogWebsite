@@ -9,7 +9,7 @@
             <!-- Header -->
             <div class="page-header">
                 <h1 class="page-title">
-                    <i class="bi bi-pen-fill me-3"></i>Create New Blog
+                    <i class="bi bi-pen-fill"></i>Create New Blog
                 </h1>
                 <p class="page-subtitle">Share your thoughts with the world</p>
             </div>
@@ -23,11 +23,11 @@
                         <!-- Title -->
                         <div class="form-section">
                             <label for="id_title" class="form-label">
-                                <i class="bi bi-card-heading form-icon"></i>Blog Title
+                                <i class="bi bi-card-heading form-icon"></i>Blog Title <span class="text-danger">*</span>
                             </label>
                             {{ form.title }}
                             {% if form.title.errors %}
-                                <div class="text-danger">
+                                <div class="text-danger mt-1">
                                     {% for error in form.title.errors %}
                                         <small>{{ error }}</small>
                                     {% endfor %}
@@ -38,12 +38,12 @@
                         <!-- Excerpt -->
                         <div class="form-section">
                             <label for="id_excerpt" class="form-label">
-                                <i class="bi bi-text-paragraph form-icon"></i>Brief Summary (Optional)
+                                <i class="bi bi-text-paragraph form-icon"></i>Brief Summary <span class="text-danger">*</span>
                             </label>
                             {{ form.excerpt }}
                             <small class="form-text">{{ form.excerpt.help_text }}</small>
                             {% if form.excerpt.errors %}
-                                <div class="text-danger">
+                                <div class="text-danger mt-1">
                                     {% for error in form.excerpt.errors %}
                                         <small>{{ error }}</small>
                                     {% endfor %}
@@ -54,12 +54,29 @@
                         <!-- Content -->
                         <div class="form-section">
                             <label for="id_content" class="form-label">
-                                <i class="bi bi-file-text form-icon"></i>Blog Content
+                                <i class="bi bi-file-text form-icon"></i>Blog Content <span class="text-danger">*</span>
                             </label>
                             {{ form.content }}
+                            <small class="form-text">{{ form.content.help_text }}</small>
                             {% if form.content.errors %}
-                                <div class="text-danger">
+                                <div class="text-danger mt-1">
                                     {% for error in form.content.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Featured Image URL -->
+                        <div class="form-section">
+                            <label for="id_featured_image" class="form-label">
+                                <i class="bi bi-image form-icon"></i>Featured Image URL
+                            </label>
+                            {{ form.featured_image }}
+                            <small class="form-text">{{ form.featured_image.help_text }}</small>
+                            {% if form.featured_image.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.featured_image.errors %}
                                         <small>{{ error }}</small>
                                     {% endfor %}
                                 </div>
@@ -74,7 +91,7 @@
                                 </label>
                                 {{ form.category }}
                                 {% if form.category.errors %}
-                                    <div class="text-danger">
+                                    <div class="text-danger mt-1">
                                         {% for error in form.category.errors %}
                                             <small>{{ error }}</small>
                                         {% endfor %}
@@ -94,29 +111,13 @@
                                 </label>
                                 {{ form.status }}
                                 {% if form.status.errors %}
-                                    <div class="text-danger">
+                                    <div class="text-danger mt-1">
                                         {% for error in form.status.errors %}
                                             <small>{{ error }}</small>
                                         {% endfor %}
                                     </div>
                                 {% endif %}
                             </div>
-                        </div>
-
-                        <!-- Featured Image -->
-                        <div class="form-section">
-                            <label for="id_featured_image" class="form-label">
-                                <i class="bi bi-image form-icon"></i>Featured Image URL (Optional)
-                            </label>
-                            {{ form.featured_image }}
-                            <small class="form-text">{{ form.featured_image.help_text }}</small>
-                            {% if form.featured_image.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.featured_image.errors %}
-                                        <small>{{ error }}</small>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
                         </div>
 
                         <!-- Tags -->
@@ -127,7 +128,7 @@
                             {{ form.tags_input }}
                             <small class="form-text">{{ form.tags_input.help_text }}</small>
                             {% if form.tags_input.errors %}
-                                <div class="text-danger">
+                                <div class="text-danger mt-1">
                                     {% for error in form.tags_input.errors %}
                                         <small>{{ error }}</small>
                                     {% endfor %}

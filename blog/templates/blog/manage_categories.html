@@ -23,7 +23,7 @@
                             </label>
                             {{ form.name }}
                             {% if form.name.errors %}
-                                <div class="text-danger">
+                                <div class="text-danger mt-1">
                                     {% for error in form.name.errors %}
                                         <small>{{ error }}</small>
                                     {% endfor %}
@@ -43,7 +43,7 @@
         <div class="col-md-8">
             <div class="page-header">
                 <h1 class="page-title">
-                    <i class="bi bi-folder-fill me-3"></i>Categories
+                    <i class="bi bi-folder-fill"></i>Categories
                 </h1>
                 <p class="page-subtitle">Organize your content with categories</p>
             </div>

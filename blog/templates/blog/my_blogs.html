@@ -5,10 +5,10 @@
 {% block content %}
 <div class="container page-container">
     <!-- Header -->
-    <div class="row blog-list-header">
+    <div class="row blog-list-header align-items-center">
         <div class="col-md-8">
             <h1 class="page-title">
-                <i class="bi bi-file-text-fill me-3"></i>My Blogs
+                <i class="bi bi-file-text-fill"></i>My Blogs
             </h1>
             <p class="page-subtitle">Manage all your blog posts</p>
         </div>
@@ -29,7 +29,7 @@
                             <table class="table blog-table mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="blog-title-col">Title</th>
+                                        <th>Title</th>
                                         <th>Status</th>
                                         <th>Category</th>
                                         <th>Published</th>
@@ -69,14 +69,14 @@
                                                         <i class="bi bi-folder me-1"></i>{{ blog.category.name }}
                                                     </span>
                                                 {% else %}
-                                                    <span class="uncategorized-text">Uncategorized</span>
+                                                    <span class="text-muted small">Uncategorized</span>
                                                 {% endif %}
                                             </td>
                                             <td>
                                                 {% if blog.published_at %}
-                                                    <span class="publish-date">{{ blog.published_at|date:"M d, Y" }}</span>
+                                                    <small>{{ blog.published_at|date:"M d, Y" }}</small>
                                                 {% else %}
-                                                    <span class="not-published-text">Not published</span>
+                                                    <span class="text-muted small">Not published</span>
                                                 {% endif %}
                                             </td>
                                             <td class="text-center">

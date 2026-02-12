@@ -1,6 +1,6 @@
 {% extends 'blog/auth_base.html' %}
 
-{% block title %}Register - BlogWebsite{% endblock %}
+{% block title %}Create Account - BlogWebsite{% endblock %}
 
 {% block content %}
 <div class="auth-form-container">
@@ -18,7 +18,7 @@
             </label>
             {{ form.name }}
             {% if form.name.errors %}
-                <div class="text-danger">
+                <div class="text-danger mt-1">
                     {% for error in form.name.errors %}
                         <small>{{ error }}</small>
                     {% endfor %}
@@ -32,7 +32,7 @@
             </label>
             {{ form.email }}
             {% if form.email.errors %}
-                <div class="text-danger">
+                <div class="text-danger mt-1">
                     {% for error in form.email.errors %}
                         <small>{{ error }}</small>
                     {% endfor %}
@@ -46,11 +46,11 @@
             </label>
             {{ form.role }}
             <div class="role-info">
-                <p><strong>Reader</strong> — Browse and comment on blog posts</p>
-                <p><strong>Author</strong> — Create, edit and publish your own blogs</p>
+                <p><strong>Reader</strong> – Browse and comment on blog posts</p>
+                <p><strong>Author</strong> – Create, edit and publish your own blogs</p>
             </div>
             {% if form.role.errors %}
-                <div class="text-danger">
+                <div class="text-danger mt-1">
                     {% for error in form.role.errors %}
                         <small>{{ error }}</small>
                     {% endfor %}
@@ -65,7 +65,7 @@
             {{ form.password1 }}
             <small class="form-text">Must be at least 8 characters long</small>
             {% if form.password1.errors %}
-                <div class="text-danger">
+                <div class="text-danger mt-1">
                     {% for error in form.password1.errors %}
                         <small>{{ error }}</small>
                     {% endfor %}
@@ -79,7 +79,7 @@
             </label>
             {{ form.password2 }}
             {% if form.password2.errors %}
-                <div class="text-danger">
+                <div class="text-danger mt-1">
                     {% for error in form.password2.errors %}
                         <small>{{ error }}</small>
                     {% endfor %}

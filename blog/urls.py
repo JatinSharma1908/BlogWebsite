@@ -16,4 +16,9 @@ urlpatterns = [
     
     # Category Management
     path('categories/', views.manage_categories_view, name='manage_categories'),
+    
+    # Public Blog Pages
+    path('blogs/', views.blog_list_view, name='blog_list'),
+    path('blog/<slug:slug>/', views.blog_detail_view, name='blog_detail'),
+    path('category/<slug:slug>/', views.category_blogs_view, name='category_blogs'),
 ]

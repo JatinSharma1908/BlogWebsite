@@ -244,3 +244,74 @@ def manage_categories_view(request):
     }
     
     return render(request, 'blog/manage_categories.html', context)
+
+
+def blog_list_view(request):
+    """Public blog listing page - shows all published blogs"""
+    
+    # Get all published blogs
+    blogs = Blog.objects.filter(tenant_id=1, status='published').select_related('author', 'category').order_by('-published_at')
+    
+    # Get all categories for sidebar
+    categories = Category.objects.filter(tenant_id=1).order_by('name')
+    
+    # Get category counts
+    for category in categories:
+        category.blog_count = Blog.objects.filter(category=category, status='published').count()
+    
+    context = {
+        'blogs': blogs,
+        'categories': categories,
+    }
+    
+    return render(request, 'blog/blog_list.html', context)
+
+
+def blog_detail_view(request, slug):
+    """Blog detail page - shows full blog content"""
+    
+    # Get the blog by slug, must be published
+    blog = get_object_or_404(Blog, slug=slug, tenant_id=1, status='published')
+    
+    # Get related blogs from same category
+    related_blogs = Blog.objects.filter(
+        category=blog.category, 
+        status='published',
+        tenant_id=1
+    ).exclude(id=blog.id).order_by('-published_at')[:3]
+    
+    # Get approved comments
+    comments = Comment.objects.filter(blog=blog, status='approved').order_by('-created_at')
+    
+    context = {
+        'blog': blog,
+        'related_blogs': related_blogs,
+        'comments': comments,
+    }
+    
+    return render(request, 'blog/blog_detail.html', context)
+
+
+def category_blogs_view(request, slug):
+    """Show all blogs in a specific category"""
+    
+    # Get the category
+    category = get_object_or_404(Category, slug=slug, tenant_id=1)
+    
+    # Get all published blogs in this category
+    blogs = Blog.objects.filter(
+        category=category, 
+        status='published',
+        tenant_id=1
+    ).select_related('author').order_by('-published_at')
+    
+    # Get all categories for sidebar
+    categories = Category.objects.filter(tenant_id=1).order_by('name')
+    
+    context = {
+        'category': category,
+        'blogs': blogs,
+        'categories': categories,
+    }
+    
+    return render(request, 'blog/category_blogs.html', context)

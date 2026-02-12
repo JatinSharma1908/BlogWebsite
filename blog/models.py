@@ -76,6 +76,7 @@ class RolePermission(models.Model):
     permission = models.ForeignKey(Permission, on_delete=models.CASCADE)
     
     class Meta:
+        db_table = 'role_permissions'
         verbose_name = 'Role Permission'
         verbose_name_plural = 'Role Permissions'
     
@@ -153,7 +154,9 @@ class Blog(models.Model):
     tenant_id = models.IntegerField()
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=300)
-    excerpt = models.TextField(blank=True, null=True)
+    excerpt = models.TextField()  # Made required (removed blank=True, null=True)
+    content = models.TextField()  # Added content field - REQUIRED
+    featured_image = models.TextField(blank=True, null=True)  # Added featured_image field as TEXT (URL)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='blogs')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='blogs')

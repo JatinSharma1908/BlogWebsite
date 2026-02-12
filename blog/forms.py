@@ -113,7 +113,7 @@ class BlogForm(forms.ModelForm):
     
     class Meta:
         model = Blog
-        fields = ['title', 'excerpt', 'category', 'status']
+        fields = ['title', 'excerpt', 'content', 'featured_image', 'category', 'status']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -122,9 +122,20 @@ class BlogForm(forms.ModelForm):
             }),
             'excerpt': forms.Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Write a brief summary of your blog (optional)',
+                'placeholder': 'Write a brief summary of your blog (required)',
                 'rows': 3,
                 'id': 'id_excerpt'
+            }),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Write your blog content here...',
+                'rows': 10,
+                'id': 'id_content'
+            }),
+            'featured_image': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter image URL (e.g., https://example.com/image.jpg)',
+                'id': 'id_featured_image'
             }),
             'category': forms.Select(attrs={
                 'class': 'form-select',
@@ -137,12 +148,16 @@ class BlogForm(forms.ModelForm):
         }
         labels = {
             'title': 'Blog Title',
-            'excerpt': 'Brief Summary',
+            'excerpt': 'Brief Summary (Required)',
+            'content': 'Blog Content',
+            'featured_image': 'Featured Image URL (Optional)',
             'category': 'Category',
             'status': 'Publication Status'
         }
         help_texts = {
-            'excerpt': 'A short preview of your blog post',
+            'excerpt': 'A short preview of your blog post (required)',
+            'content': 'The main content of your blog post',
+            'featured_image': 'Enter a URL to an image to use as featured image',
         }
     
     def __init__(self, *args, **kwargs):
@@ -151,6 +166,10 @@ class BlogForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['category'].queryset = Category.objects.filter(tenant_id=self.tenant_id)
         self.fields['category'].empty_label = "Select a category"
+        
+        # Make excerpt required
+        self.fields['excerpt'].required = True
+        
         if self.instance and self.instance.pk:
             tags = Tag.objects.filter(tenant_id=self.tenant_id, name__in=[])
             self.fields['tags_input'].initial = ', '.join([tag.name for tag in tags])
