@@ -92,7 +92,7 @@
             <!-- Comments Section -->
             <section class="comments-section mt-5">
                 <h3 class="section-title">
-                    <i class="bi bi-chat-dots me-2"></i>Comments ({{ comments.count }})
+                    <i class="bi bi-chat-dots me-2"></i>Comments ({{ comments|length }})
                 </h3>
                 
                 {% if comments %}
@@ -100,8 +100,11 @@
                         {% for comment in comments %}
                             <div class="comment-item">
                                 <div class="comment-header">
-                                    <strong>{{ comment.name }}</strong>
-                                    <span class="text-muted ms-2">{{ comment.created_at|date:"F d, Y" }}</span>
+                                    <div class="comment-avatar">{{ comment.name|first|upper }}</div>
+                                    <div>
+                                        <strong>{{ comment.name }}</strong>
+                                        <span class="text-muted ms-2 small">{{ comment.created_at|date:"F d, Y" }}</span>
+                                    </div>
                                 </div>
                                 <p class="comment-text">{{ comment.comment }}</p>
                             </div>
@@ -110,6 +113,36 @@
                 {% else %}
                     <p class="text-muted">No comments yet. Be the first to comment!</p>
                 {% endif %}
+
+                <!-- Leave a Comment Form -->
+                <div class="comment-form-wrapper mt-4">
+                    <h4 class="comment-form-heading">
+                        <i class="bi bi-pencil-square me-2"></i>Leave a Comment
+                    </h4>
+                    <p class="comment-form-note">
+                        <i class="bi bi-person-check me-1"></i>Commenting as <strong>{{ user.name }}</strong> &mdash; Your comment will appear after moderation.
+                    </p>
+
+                    <form method="post" id="commentForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ comment_form.comment }}
+                            {% if comment_form.comment.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in comment_form.comment.errors %}<small>{{ error }}</small>{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% if comment_form.non_field_errors %}
+                            <div class="alert alert-danger">{{ comment_form.non_field_errors }}</div>
+                        {% endif %}
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send-fill me-2"></i>Post Comment
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </section>
         </div>
     </div>
@@ -236,10 +269,54 @@
     margin-bottom: 0.5rem;
 }
 
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.comment-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6B46C1 0%, #4C1D95 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
 .comment-text {
     color: #334155;
     line-height: 1.6;
     margin: 0;
+    padding-left: 3.25rem;
+}
+
+/* Comment Form */
+.comment-form-wrapper {
+    background: linear-gradient(135deg, #f8f7ff 0%, #ede9fe 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    border-top: 3px solid #6B46C1;
+    margin-top: 1.5rem;
+}
+
+.comment-form-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1F1B2E;
+    margin-bottom: 0.25rem;
+}
+
+.comment-form-note {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
 }
 </style>
 {% endblock %}

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import UserRegistrationForm, UserLoginForm, BlogForm, CategoryForm
+from .forms import UserRegistrationForm, UserLoginForm, BlogForm, CategoryForm, CommentForm
 from .models import Blog, Comment, UserRole, Category, Tag
 from django.utils.text import slugify
 
@@ -267,26 +267,52 @@ def blog_list_view(request):
     return render(request, 'blog/blog_list.html', context)
 
 
+@login_required
 def blog_detail_view(request, slug):
-    """Blog detail page - shows full blog content"""
+    """Blog detail page - shows full blog content and handles comments"""
     
     # Get the blog by slug, must be published
     blog = get_object_or_404(Blog, slug=slug, tenant_id=1, status='published')
     
     # Get related blogs from same category
     related_blogs = Blog.objects.filter(
-        category=blog.category, 
+        category=blog.category,
         status='published',
         tenant_id=1
     ).exclude(id=blog.id).order_by('-published_at')[:3]
     
     # Get approved comments
     comments = Comment.objects.filter(blog=blog, status='approved').order_by('-created_at')
+    total_comments = Comment.objects.filter(blog=blog).count()
+    
+    # Handle comment form submission
+    comment_form = CommentForm()
+    comment_submitted = False
+
+    if request.method == 'POST':
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.blog = blog
+            comment.tenant_id = blog.tenant_id
+            comment.status = 'pending'
+            # Auto-fill name and email from the logged-in user
+            comment.name = request.user.name
+            comment.email = request.user.email
+            comment.save()
+            comment_submitted = True
+            messages.success(request, 'Your comment has been submitted and is awaiting moderation.')
+            return redirect('blog_detail', slug=slug)
+        else:
+            messages.error(request, 'Please correct the errors in your comment.')
     
     context = {
         'blog': blog,
         'related_blogs': related_blogs,
         'comments': comments,
+        'total_comments': total_comments,
+        'comment_form': comment_form,
+        'comment_submitted': comment_submitted,
     }
     
     return render(request, 'blog/blog_detail.html', context)
@@ -300,7 +326,7 @@ def category_blogs_view(request, slug):
     
     # Get all published blogs in this category
     blogs = Blog.objects.filter(
-        category=category, 
+        category=category,
         status='published',
         tenant_id=1
     ).select_related('author').order_by('-published_at')

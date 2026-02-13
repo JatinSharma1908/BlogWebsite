@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User, Role, Blog, Category, Tag
+from .models import User, Role, Blog, Category, Tag, Comment
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -223,3 +223,24 @@ class CategoryForm(forms.ModelForm):
             category.save()
         
         return category
+
+
+class CommentForm(forms.ModelForm):
+    """Form for submitting comments on blog posts.
+    Name and email are auto-filled from the logged-in user in the view.
+    """
+    
+    comment = forms.CharField(
+        required=True,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': 'Share your thoughts on this post...',
+            'rows': 4,
+            'id': 'id_comment_text'
+        }),
+        label='Your Comment'
+    )
+    
+    class Meta:
+        model = Comment
+        fields = ['comment']
