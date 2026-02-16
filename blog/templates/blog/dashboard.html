@@ -10,11 +10,65 @@
         <p class="dashboard-subtitle">
             {% if is_author %}
                 Your author dashboard - manage your content and track your progress
+            {% elif is_moderator %}
+                Your moderator dashboard - review and approve content
             {% else %}
                 Your reader dashboard - discover great content and engage with the community
             {% endif %}
         </p>
     </div>
+
+    {% if is_moderator %}
+        <!-- Moderator Dashboard Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card" style="background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%); color: white; border: none;">
+                    <div class="card-body">
+                        <h4 class="mb-3">
+                            <i class="bi bi-shield-check me-2"></i>Moderation Panel
+                        </h4>
+                        <p class="mb-4">Review pending blogs and comments to keep the community running smoothly.</p>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h2 class="mb-0">{{ pending_blogs_count }}</h2>
+                                                <p class="mb-0">Pending Blogs</p>
+                                            </div>
+                                            <i class="bi bi-file-earmark-check" style="font-size: 2.5rem; opacity: 0.8;"></i>
+                                        </div>
+                                        <a href="{% url 'moderate_blogs' %}" class="btn btn-light btn-sm mt-3 w-100">
+                                            <i class="bi bi-eye me-2"></i>Review Blogs
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h2 class="mb-0">{{ pending_comments_count }}</h2>
+                                                <p class="mb-0">Pending Comments</p>
+                                            </div>
+                                            <i class="bi bi-chat-dots" style="font-size: 2.5rem; opacity: 0.8;"></i>
+                                        </div>
+                                        <a href="{% url 'moderate_comments' %}" class="btn btn-light btn-sm mt-3 w-100">
+                                            <i class="bi bi-eye me-2"></i>Review Comments
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 
     {% if is_author %}
         <!-- Author Dashboard -->
@@ -36,6 +90,20 @@
                 <div class="stat-value">{{ draft_blogs }}</div>
                 <div class="stat-label">Drafts</div>
             </div>
+            {% if pending_blogs > 0 %}
+            <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                <i class="bi bi-hourglass-split stat-icon"></i>
+                <div class="stat-value">{{ pending_blogs }}</div>
+                <div class="stat-label">Pending Review</div>
+            </div>
+            {% endif %}
+            {% if rejected_blogs > 0 %}
+            <div class="stat-card" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">
+                <i class="bi bi-x-circle stat-icon"></i>
+                <div class="stat-value">{{ rejected_blogs }}</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            {% endif %}
             <div class="stat-card">
                 <i class="bi bi-chat-dots stat-icon"></i>
                 <div class="stat-value">{{ total_comments }}</div>
@@ -110,6 +178,14 @@
                                                     <span class="badge-status badge-draft">
                                                         <i class="bi bi-pencil me-1"></i>Draft
                                                     </span>
+                                                {% elif blog.status == 'pending_review' %}
+                                                    <span class="badge-status" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
+                                                        <i class="bi bi-hourglass-split me-1"></i>Pending
+                                                    </span>
+                                                {% elif blog.status == 'rejected' %}
+                                                    <span class="badge-status" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: white;">
+                                                        <i class="bi bi-x-circle me-1"></i>Rejected
+                                                    </span>
                                                 {% else %}
                                                     <span class="badge-status badge-archived">
                                                         <i class="bi bi-archive me-1"></i>Archived
@@ -130,6 +206,11 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
+                                                    {% if blog.status == 'draft' or blog.status == 'rejected' %}
+                                                        <a href="{% url 'submit_blog' blog.id %}" class="btn btn-sm btn-success" title="Submit for Review">
+                                                            <i class="bi bi-send"></i>
+                                                        </a>
+                                                    {% endif %}
                                                     <a href="{% url 'edit_blog' blog.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
                                                         <i class="bi bi-pencil-square"></i>
                                                     </a>

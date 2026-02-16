@@ -1,0 +1,144 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Moderate Comments - BlogWebsite{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-5 fw-bold text-gradient">
+                        <i class="bi bi-chat-dots me-2"></i>Moderate Comments
+                    </h1>
+                    <p class="text-muted">Review and moderate pending comments</p>
+                </div>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Pending Comments Count -->
+            <div class="card glass-card mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="bi bi-chat-square-dots text-warning fs-2"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Pending Comments</h5>
+                            <p class="text-muted mb-0">{{ pending_comments.count }} comment(s) waiting for moderation</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Comments List -->
+            {% if pending_comments %}
+                <div class="row g-4">
+                    {% for comment in pending_comments %}
+                        <div class="col-12">
+                            <div class="card glass-card hover-lift">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <!-- Commenter Info -->
+                                            <div class="d-flex align-items-start mb-3">
+                                                <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                                                    <i class="bi bi-person-fill text-primary fs-4"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h5 class="mb-1">{{ comment.name }}</h5>
+                                                    <p class="text-muted small mb-0">{{ comment.email }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Comment Content -->
+                                            <div class="mb-3">
+                                                <p class="mb-2">{{ comment.comment }}</p>
+                                            </div>
+
+                                            <!-- Blog Info -->
+                                            <div class="alert alert-light mb-3">
+                                                <i class="bi bi-file-text me-2"></i>
+                                                <strong>On blog:</strong> {{ comment.blog.title }}
+                                                <br>
+                                                <i class="bi bi-person me-2"></i>
+                                                <strong>By:</strong> {{ comment.blog.author.name }}
+                                            </div>
+
+                                            <!-- Metadata -->
+                                            <div class="d-flex align-items-center text-muted small">
+                                                <i class="bi bi-clock me-2"></i>
+                                                <span>{{ comment.created_at|date:"M d, Y g:i A" }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4 d-flex flex-column justify-content-center align-items-end">
+                                            <form method="post" action="{% url 'approve_comment' comment.id %}" class="w-100 mb-2">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-success w-100">
+                                                    <i class="bi bi-check-circle me-2"></i>Approve
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{% url 'reject_comment' comment.id %}" class="w-100">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger w-100">
+                                                    <i class="bi bi-x-circle me-2"></i>Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- No Pending Comments -->
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                    </div>
+                    <h3 class="text-muted">All Caught Up!</h3>
+                    <p class="text-muted">No comments pending moderation at the moment.</p>
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary mt-3">
+                        <i class="bi bi-house me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(107, 70, 193, 0.1);
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(107, 70, 193, 0.2);
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
+{% endblock %}

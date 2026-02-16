@@ -3,8 +3,11 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegistrationForm, UserLoginForm, BlogForm, CategoryForm, CommentForm
-from .models import Blog, Comment, UserRole, Category, Tag
+from .models import Blog, Comment, UserRole, Category, Tag, User
 from django.utils.text import slugify
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 def register_view(request):
@@ -86,15 +89,27 @@ def dashboard_view(request):
     user_roles = UserRole.objects.filter(user=user).select_related('role')
     roles = [ur.role.name for ur in user_roles]
     
-    # Check if user is an author
+    # Check if user is an author or moderator
     is_author = 'Author' in roles
+    is_moderator = user.can_moderate_blogs() or user.is_superuser
     
     # Initialize context
     context = {
         'user': user,
         'roles': roles,
         'is_author': is_author,
+        'is_moderator': is_moderator,
     }
+    
+    # If user is a moderator, show pending items
+    if is_moderator:
+        pending_blogs_count = Blog.objects.filter(status='pending_review').count()
+        pending_comments_count = Comment.objects.filter(status='pending').count()
+        
+        context.update({
+            'pending_blogs_count': pending_blogs_count,
+            'pending_comments_count': pending_comments_count,
+        })
     
     # If user is an author, get their blog statistics
     if is_author:
@@ -105,6 +120,8 @@ def dashboard_view(request):
         total_blogs = user_blogs.count()
         published_blogs = user_blogs.filter(status='published').count()
         draft_blogs = user_blogs.filter(status='draft').count()
+        pending_blogs = user_blogs.filter(status='pending_review').count()
+        rejected_blogs = user_blogs.filter(status='rejected').count()
         
         # Get total comments on user's blogs
         total_comments = Comment.objects.filter(blog__author=user).count()
@@ -117,6 +134,8 @@ def dashboard_view(request):
             'total_blogs': total_blogs,
             'published_blogs': published_blogs,
             'draft_blogs': draft_blogs,
+            'pending_blogs': pending_blogs,
+            'rejected_blogs': rejected_blogs,
             'total_comments': total_comments,
             'pending_comments': pending_comments,
             'recent_blogs': recent_blogs,
@@ -139,7 +158,7 @@ def create_blog_view(request):
     user_roles = UserRole.objects.filter(user=request.user).select_related('role')
     roles = [ur.role.name for ur in user_roles]
     
-    if 'Author' not in roles:
+    if 'Author' not in roles and not request.user.is_superuser:
         messages.error(request, 'Only authors can create blog posts.')
         return redirect('dashboard')
     
@@ -147,7 +166,7 @@ def create_blog_view(request):
         form = BlogForm(request.POST, user=request.user, tenant_id=1)
         if form.is_valid():
             blog = form.save()
-            messages.success(request, f'Blog "{blog.title}" created successfully!')
+            messages.success(request, f'Blog "{blog.title}" created successfully as draft!')
             return redirect('my_blogs')
         else:
             messages.error(request, 'Please correct the errors below.')
@@ -161,12 +180,33 @@ def create_blog_view(request):
 def edit_blog_view(request, blog_id):
     """Edit existing blog post"""
     
-    blog = get_object_or_404(Blog, id=blog_id, author=request.user)
+    blog = get_object_or_404(Blog, id=blog_id)
+    
+    # Check permissions
+    if blog.author != request.user and not request.user.can_edit_any_blog():
+        messages.error(request, 'You do not have permission to edit this blog.')
+        return redirect('my_blogs')
+    
+    # Check if blog can be edited based on status
+    if blog.status in ['pending_review', 'published'] and blog.author == request.user:
+        messages.warning(request, 'This blog is under review or published. Editing will change status to draft and require re-submission.')
     
     if request.method == 'POST':
         form = BlogForm(request.POST, instance=blog, user=request.user, tenant_id=blog.tenant_id)
         if form.is_valid():
-            blog = form.save()
+            blog = form.save(commit=False)
+            
+            # If blog was published or pending and is being edited by author, change to draft
+            if blog.status in ['pending_review', 'published'] and blog.author == request.user:
+                blog.status = 'draft'
+                blog.published_at = None
+                blog.submitted_at = None
+                blog.reviewed_at = None
+                blog.reviewed_by = None
+                messages.info(request, 'Blog status changed to draft. You need to submit for review again.')
+            
+            blog.save()
+            form.save_m2m()  # Save many-to-many relationships
             messages.success(request, f'Blog "{blog.title}" updated successfully!')
             return redirect('my_blogs')
         else:
@@ -178,6 +218,34 @@ def edit_blog_view(request, blog_id):
 
 
 @login_required
+def submit_blog_for_review(request, blog_id):
+    """Submit a blog for moderation"""
+    
+    blog = get_object_or_404(Blog, id=blog_id, author=request.user)
+    
+    # Check if blog can be submitted
+    if blog.status not in ['draft', 'rejected']:
+        messages.error(request, 'This blog cannot be submitted for review.')
+        return redirect('my_blogs')
+    
+    if request.method == 'POST':
+        blog.status = 'pending_review'
+        blog.submitted_at = timezone.now()
+        blog.reviewed_at = None
+        blog.reviewed_by = None
+        blog.rejection_reason = None
+        blog.save()
+        
+        # Send email notification to moderators (optional)
+        send_blog_submission_notification(blog)
+        
+        messages.success(request, f'Blog "{blog.title}" submitted for review!')
+        return redirect('my_blogs')
+    
+    return render(request, 'blog/submit_for_review.html', {'blog': blog})
+
+
+@login_required
 def my_blogs_view(request):
     """List all blogs by current user"""
     
@@ -185,7 +253,7 @@ def my_blogs_view(request):
     user_roles = UserRole.objects.filter(user=request.user).select_related('role')
     roles = [ur.role.name for ur in user_roles]
     
-    if 'Author' not in roles:
+    if 'Author' not in roles and not request.user.is_superuser:
         messages.error(request, 'Only authors can access this page.')
         return redirect('dashboard')
     
@@ -202,7 +270,12 @@ def my_blogs_view(request):
 def delete_blog_view(request, blog_id):
     """Delete a blog post"""
     
-    blog = get_object_or_404(Blog, id=blog_id, author=request.user)
+    blog = get_object_or_404(Blog, id=blog_id)
+    
+    # Check permissions
+    if blog.author != request.user and not request.user.can_edit_any_blog():
+        messages.error(request, 'You do not have permission to delete this blog.')
+        return redirect('my_blogs')
     
     if request.method == 'POST':
         blog_title = blog.title
@@ -221,7 +294,7 @@ def manage_categories_view(request):
     user_roles = UserRole.objects.filter(user=request.user).select_related('role')
     roles = [ur.role.name for ur in user_roles]
     
-    if 'Author' not in roles:
+    if 'Author' not in roles and not request.user.is_superuser:
         messages.error(request, 'Only authors can manage categories.')
         return redirect('dashboard')
     
@@ -245,6 +318,165 @@ def manage_categories_view(request):
     
     return render(request, 'blog/manage_categories.html', context)
 
+
+# ==================== MODERATION VIEWS ====================
+
+@login_required
+def moderate_blogs_view(request):
+    """View for moderators to see pending blogs"""
+    
+    if not request.user.can_moderate_blogs():
+        messages.error(request, 'You do not have permission to moderate blogs.')
+        return redirect('dashboard')
+    
+    # Get all pending blogs
+    pending_blogs = Blog.objects.filter(status='pending_review').select_related('author', 'category').order_by('-submitted_at')
+    
+    context = {
+        'pending_blogs': pending_blogs,
+    }
+    
+    return render(request, 'blog/moderate_blogs.html', context)
+
+
+@login_required
+def approve_blog_view(request, blog_id):
+    """Approve a blog post"""
+    
+    if not request.user.can_moderate_blogs():
+        messages.error(request, 'You do not have permission to approve blogs.')
+        return redirect('dashboard')
+    
+    blog = get_object_or_404(Blog, id=blog_id, status='pending_review')
+    
+    if request.method == 'POST':
+        blog.status = 'published'
+        blog.reviewed_at = timezone.now()
+        blog.reviewed_by = request.user
+        blog.published_at = timezone.now()
+        blog.rejection_reason = None
+        blog.save()
+        
+        # Send email notification to author
+        send_blog_approval_notification(blog)
+        
+        messages.success(request, f'Blog "{blog.title}" has been approved and published!')
+        return redirect('moderate_blogs')
+    
+    return render(request, 'blog/approve_blog.html', {'blog': blog})
+
+
+@login_required
+def reject_blog_view(request, blog_id):
+    """Reject a blog post"""
+    
+    if not request.user.can_moderate_blogs():
+        messages.error(request, 'You do not have permission to reject blogs.')
+        return redirect('dashboard')
+    
+    blog = get_object_or_404(Blog, id=blog_id, status='pending_review')
+    
+    if request.method == 'POST':
+        rejection_reason = request.POST.get('rejection_reason', '')
+        
+        if not rejection_reason:
+            messages.error(request, 'Please provide a reason for rejection.')
+            return render(request, 'blog/reject_blog.html', {'blog': blog})
+        
+        blog.status = 'rejected'
+        blog.reviewed_at = timezone.now()
+        blog.reviewed_by = request.user
+        blog.rejection_reason = rejection_reason
+        blog.save()
+        
+        # Send email notification to author
+        send_blog_rejection_notification(blog)
+        
+        messages.success(request, f'Blog "{blog.title}" has been rejected.')
+        return redirect('moderate_blogs')
+    
+    return render(request, 'blog/reject_blog.html', {'blog': blog})
+
+
+@login_required
+def moderate_comments_view(request):
+    """View for moderators to see pending comments"""
+    
+    if not request.user.can_moderate_comments():
+        messages.error(request, 'You do not have permission to moderate comments.')
+        return redirect('dashboard')
+    
+    # Get all pending comments
+    pending_comments = Comment.objects.filter(status='pending').select_related('blog', 'blog__author').order_by('-created_at')
+    
+    context = {
+        'pending_comments': pending_comments,
+    }
+    
+    return render(request, 'blog/moderate_comments.html', context)
+
+
+@login_required
+def approve_comment_view(request, comment_id):
+    """Approve a comment"""
+    
+    comment = get_object_or_404(Comment, id=comment_id, status='pending')
+    
+    # Check permissions: moderators can approve any, authors can approve on own blogs
+    can_moderate = request.user.can_moderate_comments()
+    is_blog_author = comment.blog.author == request.user
+    
+    if not (can_moderate or is_blog_author):
+        messages.error(request, 'You do not have permission to approve this comment.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        comment.status = 'approved'
+        comment.reviewed_at = timezone.now()
+        comment.reviewed_by = request.user
+        comment.save()
+        
+        messages.success(request, 'Comment has been approved!')
+        
+        if can_moderate:
+            return redirect('moderate_comments')
+        else:
+            return redirect('dashboard')
+    
+    return render(request, 'blog/approve_comment.html', {'comment': comment})
+
+
+@login_required
+def reject_comment_view(request, comment_id):
+    """Reject a comment"""
+    
+    comment = get_object_or_404(Comment, id=comment_id, status='pending')
+    
+    # Check permissions
+    can_moderate = request.user.can_moderate_comments()
+    is_blog_author = comment.blog.author == request.user
+    
+    if not (can_moderate or is_blog_author):
+        messages.error(request, 'You do not have permission to reject this comment.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        comment.status = 'rejected'
+        comment.reviewed_at = timezone.now()
+        comment.reviewed_by = request.user
+        comment.save()
+        
+        messages.success(request, 'Comment has been rejected!')
+        
+        if can_moderate:
+            return redirect('moderate_comments')
+        else:
+            return redirect('dashboard')
+    
+    return render(request, 'blog/reject_comment.html', {'comment': comment})
+
+
+# ==================== PUBLIC VIEWS ====================
 
 def blog_list_view(request):
     """Public blog listing page - shows all published blogs"""
@@ -283,7 +515,7 @@ def blog_detail_view(request, slug):
     
     # Get approved comments
     comments = Comment.objects.filter(blog=blog, status='approved').order_by('-created_at')
-    total_comments = Comment.objects.filter(blog=blog).count()
+    total_comments = comments.count()
     
     # Handle comment form submission
     comment_form = CommentForm()
@@ -341,3 +573,91 @@ def category_blogs_view(request, slug):
     }
     
     return render(request, 'blog/category_blogs.html', context)
+
+
+# ==================== EMAIL NOTIFICATION HELPERS ====================
+
+def send_blog_submission_notification(blog):
+    """Send email to moderators when a blog is submitted"""
+    try:
+        moderators = User.objects.filter(
+            userrole__role__name__in=['Moderator', 'Editor']
+        ).distinct()
+        
+        admin_users = User.objects.filter(is_superuser=True)
+        
+        recipients = list(moderators.values_list('email', flat=True)) + list(admin_users.values_list('email', flat=True))
+        
+        if recipients:
+            subject = f'New Blog Submission: {blog.title}'
+            message = f'''
+A new blog has been submitted for review:
+
+Title: {blog.title}
+Author: {blog.author.name}
+Submitted: {blog.submitted_at}
+
+Please review it at your earliest convenience.
+            '''
+            
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                recipients,
+                fail_silently=True,
+            )
+    except Exception as e:
+        # Log error but don't break the flow
+        print(f"Error sending notification: {e}")
+
+
+def send_blog_approval_notification(blog):
+    """Send email to author when blog is approved"""
+    try:
+        subject = f'Your Blog "{blog.title}" has been Approved!'
+        message = f'''
+Congratulations! Your blog "{blog.title}" has been approved and is now published.
+
+You can view it on the website.
+
+Approved by: {blog.reviewed_by.name if blog.reviewed_by else 'Admin'}
+Approved on: {blog.reviewed_at}
+        '''
+        
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [blog.author.email],
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f"Error sending notification: {e}")
+
+
+def send_blog_rejection_notification(blog):
+    """Send email to author when blog is rejected"""
+    try:
+        subject = f'Your Blog "{blog.title}" Needs Revision'
+        message = f'''
+Your blog "{blog.title}" has been reviewed and requires some changes before it can be published.
+
+Reason for rejection:
+{blog.rejection_reason}
+
+Please make the necessary changes and submit again.
+
+Reviewed by: {blog.reviewed_by.name if blog.reviewed_by else 'Admin'}
+Reviewed on: {blog.reviewed_at}
+        '''
+        
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [blog.author.email],
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f"Error sending notification: {e}")

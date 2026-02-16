@@ -50,6 +50,34 @@
                                 <i class="bi bi-speedometer2 me-1"></i>Dashboard
                             </a>
                         </li>
+                        
+                        <!-- Moderation Links (only for moderators) -->
+                        {% if user.can_moderate_blogs %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="moderationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-shield-check me-1"></i>Moderate
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="moderationDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'moderate_blogs' %}">
+                                            <i class="bi bi-file-earmark-check me-2"></i>Blogs
+                                            {% if pending_blogs_count and pending_blogs_count > 0 %}
+                                                <span class="badge bg-warning text-dark ms-2">{{ pending_blogs_count }}</span>
+                                            {% endif %}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'moderate_comments' %}">
+                                            <i class="bi bi-chat-dots me-2"></i>Comments
+                                            {% if pending_comments_count and pending_comments_count > 0 %}
+                                                <span class="badge bg-info text-white ms-2">{{ pending_comments_count }}</span>
+                                            {% endif %}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% endif %}
+                        
                         <li class="nav-item">
                             <span class="nav-link">
                                 <i class="bi bi-person-circle me-1"></i>{{ user.name }}

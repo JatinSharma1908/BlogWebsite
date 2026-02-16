@@ -1,0 +1,54 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Approve Comment - BlogWebsite{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="text-center mb-4">
+                <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                <h1 class="display-5 fw-bold text-gradient mt-3">Approve Comment</h1>
+            </div>
+
+            <div class="card glass-card">
+                <div class="card-body p-4">
+                    <div class="alert alert-light mb-4">
+                        <h6 class="mb-2"><strong>{{ comment.name }}</strong></h6>
+                        <p class="mb-2">{{ comment.comment }}</p>
+                        <small class="text-muted">On: {{ comment.blog.title }}</small>
+                    </div>
+
+                    <p class="text-muted mb-4">Approve this comment to make it visible on the blog post?</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success flex-fill">
+                                <i class="bi bi-check-circle me-2"></i>Approve
+                            </button>
+                            <a href="{% url 'moderate_comments' %}" class="btn btn-outline-secondary flex-fill">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(107, 70, 193, 0.1);
+    box-shadow: 0 10px 30px rgba(107, 70, 193, 0.1);
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
+{% endblock %}

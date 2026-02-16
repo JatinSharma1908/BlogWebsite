@@ -41,29 +41,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     def __str__(self):
         return self.email
-    
-    def has_role(self, role_name):
-        """Check if user has a specific role"""
-        return self.userrole_set.filter(role__name=role_name).exists()
-    
-    def get_roles(self):
-        """Get list of role names for this user"""
-        return [ur.role.name for ur in self.userrole_set.select_related('role')]
-    
-    def can_moderate_blogs(self):
-        """Check if user can approve/reject blogs"""
-        roles = self.get_roles()
-        return self.is_superuser or 'Moderator' in roles or 'Editor' in roles
-    
-    def can_moderate_comments(self):
-        """Check if user can approve/reject comments"""
-        roles = self.get_roles()
-        return self.is_superuser or 'Moderator' in roles or 'Editor' in roles
-    
-    def can_edit_any_blog(self):
-        """Check if user can edit any blog (not just own)"""
-        roles = self.get_roles()
-        return self.is_superuser or 'Editor' in roles
 
 
 class Role(models.Model):
@@ -170,29 +147,19 @@ class Tag(models.Model):
 class Blog(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
-        ('pending_review', 'Pending Review'),
         ('published', 'Published'),
-        ('rejected', 'Rejected'),
         ('archived', 'Archived'),
     ]
     
     tenant_id = models.IntegerField()
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=300)
-    excerpt = models.TextField()
-    content = models.TextField()
-    featured_image = models.TextField(blank=True, null=True)
+    excerpt = models.TextField()  # Made required (removed blank=True, null=True)
+    content = models.TextField()  # Added content field - REQUIRED
+    featured_image = models.TextField(blank=True, null=True)  # Added featured_image field as TEXT (URL)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='blogs')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='blogs')
-    
-    # Moderation fields
-    submitted_at = models.DateTimeField(blank=True, null=True, help_text="When blog was submitted for review")
-    reviewed_at = models.DateTimeField(blank=True, null=True, help_text="When blog was approved/rejected")
-    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
-                                     related_name='reviewed_blogs', help_text="Moderator who reviewed")
-    rejection_reason = models.TextField(blank=True, null=True, help_text="Reason for rejection")
-    
     published_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
@@ -221,14 +188,6 @@ class Blog(models.Model):
     
     def __str__(self):
         return self.title
-    
-    def can_be_submitted(self):
-        """Check if blog can be submitted for review"""
-        return self.status in ['draft', 'rejected']
-    
-    def can_be_edited(self):
-        """Check if blog can be edited"""
-        return self.status in ['draft', 'rejected']
 
 
 class Comment(models.Model):
@@ -245,12 +204,6 @@ class Comment(models.Model):
     email = models.EmailField(max_length=150)
     comment = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    
-    # Moderation fields
-    reviewed_at = models.DateTimeField(blank=True, null=True, help_text="When comment was moderated")
-    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                                     related_name='reviewed_comments', help_text="Moderator who reviewed")
-    
     created_at = models.DateTimeField(default=timezone.now)
     
     class Meta:

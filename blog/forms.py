@@ -113,7 +113,7 @@ class BlogForm(forms.ModelForm):
     
     class Meta:
         model = Blog
-        fields = ['title', 'excerpt', 'content', 'featured_image', 'category', 'status']
+        fields = ['title', 'excerpt', 'content', 'featured_image', 'category']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -141,10 +141,6 @@ class BlogForm(forms.ModelForm):
                 'class': 'form-select',
                 'id': 'id_category'
             }),
-            'status': forms.Select(attrs={
-                'class': 'form-select',
-                'id': 'id_status'
-            }),
         }
         labels = {
             'title': 'Blog Title',
@@ -152,7 +148,6 @@ class BlogForm(forms.ModelForm):
             'content': 'Blog Content',
             'featured_image': 'Featured Image URL (Optional)',
             'category': 'Category',
-            'status': 'Publication Status'
         }
         help_texts = {
             'excerpt': 'A short preview of your blog post (required)',
@@ -170,7 +165,9 @@ class BlogForm(forms.ModelForm):
         # Make excerpt required
         self.fields['excerpt'].required = True
         
+        # Load existing tags if editing
         if self.instance and self.instance.pk:
+            # Get tags associated with this blog (you'll need to implement a many-to-many if needed)
             tags = Tag.objects.filter(tenant_id=self.tenant_id, name__in=[])
             self.fields['tags_input'].initial = ', '.join([tag.name for tag in tags])
     
@@ -180,6 +177,10 @@ class BlogForm(forms.ModelForm):
         
         if self.user:
             blog.author = self.user
+        
+        # Authors can only save as draft, not directly publish
+        if not self.user.is_superuser and not self.user.can_moderate_blogs():
+            blog.status = 'draft'
         
         if commit:
             blog.save()

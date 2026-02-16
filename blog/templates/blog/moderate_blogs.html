@@ -1,0 +1,155 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Moderate Blogs - BlogWebsite{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-5 fw-bold text-gradient">
+                        <i class="bi bi-shield-check me-2"></i>Moderate Blogs
+                    </h1>
+                    <p class="text-muted">Review and approve pending blog submissions</p>
+                </div>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Pending Blogs Count -->
+            <div class="card glass-card mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="bi bi-hourglass-split text-warning fs-2"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Pending Blogs</h5>
+                            <p class="text-muted mb-0">{{ pending_blogs.count }} blog(s) waiting for review</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Blogs List -->
+            {% if pending_blogs %}
+                <div class="row g-4">
+                    {% for blog in pending_blogs %}
+                        <div class="col-12">
+                            <div class="card glass-card hover-lift">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h4 class="card-title mb-3">
+                                                {{ blog.title }}
+                                            </h4>
+                                            
+                                            <div class="mb-3">
+                                                <span class="badge bg-warning text-dark me-2">
+                                                    <i class="bi bi-hourglass-split me-1"></i>Pending Review
+                                                </span>
+                                                {% if blog.category %}
+                                                    <span class="badge bg-primary me-2">
+                                                        <i class="bi bi-folder me-1"></i>{{ blog.category.name }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+
+                                            <p class="text-muted mb-3">{{ blog.excerpt|truncatewords:30 }}</p>
+
+                                            <div class="d-flex align-items-center text-muted small">
+                                                <i class="bi bi-person-circle me-2"></i>
+                                                <span class="me-3"><strong>Author:</strong> {{ blog.author.name }}</span>
+                                                <i class="bi bi-calendar-check me-2"></i>
+                                                <span class="me-3"><strong>Submitted:</strong> {{ blog.submitted_at|date:"M d, Y g:i A" }}</span>
+                                                <i class="bi bi-clock me-2"></i>
+                                                <span><strong>Created:</strong> {{ blog.created_at|date:"M d, Y" }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4 d-flex flex-column justify-content-center align-items-end">
+                                            <a href="{% url 'approve_blog' blog.id %}" class="btn btn-success mb-2 w-100">
+                                                <i class="bi bi-check-circle me-2"></i>Approve
+                                            </a>
+                                            <a href="{% url 'reject_blog' blog.id %}" class="btn btn-danger w-100">
+                                                <i class="bi bi-x-circle me-2"></i>Reject
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Blog Preview (Collapsible) -->
+                                    <div class="mt-3">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#preview-{{ blog.id }}">
+                                            <i class="bi bi-eye me-1"></i>Preview Content
+                                        </button>
+                                        <div class="collapse mt-3" id="preview-{{ blog.id }}">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5>Content Preview:</h5>
+                                                    <hr>
+                                                    {{ blog.content|truncatewords:100|linebreaks }}
+                                                    
+                                                    {% if blog.featured_image %}
+                                                        <hr>
+                                                        <h6>Featured Image:</h6>
+                                                        <img src="{{ blog.featured_image }}" alt="{{ blog.title }}" class="img-fluid rounded" style="max-height: 300px;">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- No Pending Blogs -->
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                    </div>
+                    <h3 class="text-muted">All Caught Up!</h3>
+                    <p class="text-muted">No blogs pending review at the moment.</p>
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary mt-3">
+                        <i class="bi bi-house me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(107, 70, 193, 0.1);
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(107, 70, 193, 0.2);
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
+{% endblock %}

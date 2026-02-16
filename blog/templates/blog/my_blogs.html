@@ -46,6 +46,14 @@
                                                         <br>
                                                         <small class="blog-excerpt">{{ blog.excerpt|truncatewords:15 }}</small>
                                                     {% endif %}
+                                                    
+                                                    <!-- Rejection Reason Alert -->
+                                                    {% if blog.status == 'rejected' and blog.rejection_reason %}
+                                                        <div class="alert alert-warning mt-2 mb-0" style="padding: 0.5rem; font-size: 0.85rem;">
+                                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                                            <strong>Rejection Reason:</strong> {{ blog.rejection_reason|truncatewords:30 }}
+                                                        </div>
+                                                    {% endif %}
                                                 </div>
                                             </td>
                                             <td>
@@ -56,6 +64,14 @@
                                                 {% elif blog.status == 'draft' %}
                                                     <span class="badge-status badge-draft">
                                                         <i class="bi bi-pencil me-1"></i>Draft
+                                                    </span>
+                                                {% elif blog.status == 'pending_review' %}
+                                                    <span class="badge-status" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
+                                                        <i class="bi bi-hourglass-split me-1"></i>Pending Review
+                                                    </span>
+                                                {% elif blog.status == 'rejected' %}
+                                                    <span class="badge-status" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: white;">
+                                                        <i class="bi bi-x-circle me-1"></i>Rejected
                                                     </span>
                                                 {% else %}
                                                     <span class="badge-status badge-archived">
@@ -81,9 +97,28 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
-                                                    <a href="{% url 'edit_blog' blog.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                    </a>
+                                                    <!-- Edit button - available for draft and rejected -->
+                                                    {% if blog.status == 'draft' or blog.status == 'rejected' %}
+                                                        <a href="{% url 'edit_blog' blog.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                                            <i class="bi bi-pencil-square"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    <!-- Submit for Review button - for draft and rejected -->
+                                                    {% if blog.status == 'draft' or blog.status == 'rejected' %}
+                                                        <a href="{% url 'submit_blog' blog.id %}" class="btn btn-sm btn-success" title="Submit for Review">
+                                                            <i class="bi bi-send"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    <!-- Edit for published/pending - shows warning -->
+                                                    {% if blog.status == 'published' or blog.status == 'pending_review' %}
+                                                        <a href="{% url 'edit_blog' blog.id %}" class="btn btn-sm btn-outline-warning" title="Edit (will change to draft)">
+                                                            <i class="bi bi-pencil-square"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    <!-- Delete button - always available -->
                                                     <a href="{% url 'delete_blog' blog.id %}" class="btn btn-sm btn-outline-danger" title="Delete">
                                                         <i class="bi bi-trash"></i>
                                                     </a>

@@ -1,0 +1,183 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Submit Blog for Review - BlogWebsite{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <div class="mb-3">
+                    <i class="bi bi-send text-primary" style="font-size: 4rem;"></i>
+                </div>
+                <h1 class="display-5 fw-bold text-gradient mb-2">Submit for Review</h1>
+                <p class="text-muted">Ready to publish? Submit your blog for moderation approval</p>
+            </div>
+
+            <!-- Blog Preview Card -->
+            <div class="card glass-card mb-4">
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-3">{{ blog.title }}</h2>
+                    
+                    <div class="mb-4">
+                        <span class="badge bg-secondary me-2">
+                            <i class="bi bi-file-earmark-text me-1"></i>{{ blog.status|title }}
+                        </span>
+                        {% if blog.category %}
+                            <span class="badge bg-primary me-2">
+                                <i class="bi bi-folder me-1"></i>{{ blog.category.name }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <h5>Excerpt</h5>
+                        <p class="text-muted">{{ blog.excerpt }}</p>
+                    </div>
+
+                    <!-- Collapsible Content Preview -->
+                    <button class="btn btn-sm btn-outline-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#contentPreview">
+                        <i class="bi bi-eye me-1"></i>Preview Content
+                    </button>
+                    
+                    <div class="collapse" id="contentPreview">
+                        <div class="border rounded p-3 mb-3" style="max-height: 300px; overflow-y: auto;">
+                            {{ blog.content|linebreaks }}
+                        </div>
+                        
+                        {% if blog.featured_image %}
+                            <div class="mb-3">
+                                <h6>Featured Image:</h6>
+                                <img src="{{ blog.featured_image }}" alt="{{ blog.title }}" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row text-muted small">
+                        <div class="col-md-6">
+                            <i class="bi bi-calendar-plus me-2"></i>
+                            <strong>Created:</strong> {{ blog.created_at|date:"M d, Y" }}
+                        </div>
+                        <div class="col-md-6">
+                            <i class="bi bi-pencil-square me-2"></i>
+                            <strong>Last Updated:</strong> {{ blog.updated_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submission Form -->
+            <form method="post" class="card glass-card">
+                {% csrf_token %}
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">
+                        <i class="bi bi-send me-2 text-primary"></i>Ready to Submit?
+                    </h4>
+
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>What happens next:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Your blog will be sent to moderators for review</li>
+                            <li>You'll be notified via email when it's approved or needs revision</li>
+                            <li>Once approved, your blog will be published automatically</li>
+                            <li>If rejected, you can edit and resubmit</li>
+                        </ul>
+                    </div>
+
+                    <!-- Pre-submission Checklist -->
+                    <div class="card mb-4" style="background-color: #f8f9fa;">
+                        <div class="card-body">
+                            <h6 class="card-title mb-3">
+                                <i class="bi bi-clipboard-check me-2"></i>Pre-Submission Checklist
+                            </h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="check1">
+                                <label class="form-check-label" for="check1">
+                                    I've proofread my content for spelling and grammar
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="check2">
+                                <label class="form-check-label" for="check2">
+                                    My title is clear and engaging
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="check3">
+                                <label class="form-check-label" for="check3">
+                                    I've added a compelling excerpt
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="check4">
+                                <label class="form-check-label" for="check4">
+                                    Featured image is appropriate and high quality
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check5">
+                                <label class="form-check-label" for="check5">
+                                    Content follows community guidelines
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if blog.rejection_reason %}
+                        <div class="alert alert-warning mb-4">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-exclamation-triangle me-2"></i>Previous Rejection Feedback:
+                            </h6>
+                            <p class="mb-0">{{ blog.rejection_reason }}</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-send me-2"></i>Submit for Review
+                        </button>
+                        <a href="{% url 'my_blogs' %}" class="btn btn-outline-secondary flex-fill">
+                            <i class="bi bi-arrow-left me-2"></i>Back to My Blogs
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Tips Card -->
+            <div class="card glass-card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-lightbulb me-2 text-warning"></i>Tips for Faster Approval
+                    </h5>
+                    <ul class="mb-0">
+                        <li>Use clear, descriptive headings</li>
+                        <li>Break up long paragraphs for better readability</li>
+                        <li>Include relevant examples or case studies</li>
+                        <li>Cite sources for factual claims</li>
+                        <li>Add alt text descriptions for images</li>
+                        <li>Ensure content is original and not plagiarized</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(107, 70, 193, 0.1);
+    box-shadow: 0 10px 30px rgba(107, 70, 193, 0.1);
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
+{% endblock %}
